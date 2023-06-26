@@ -1,0 +1,29 @@
+query getUsers($queryParams: UserQueryParams!) {
+  getUsers(queryParams: $queryParams) {
+    meta {
+      itemCount
+      totalItems
+      itemsPerPage
+      totalPages
+      currentPage
+    }
+    items {
+      id
+      avatar
+      fullName
+      email
+      birthday
+      phoneNumber
+      gender
+      roleId
+      tutorDetail {
+        cv
+      }
+      role {
+        name
+      }
+      createdAt
+      updatedAt
+    }
+  }
+}

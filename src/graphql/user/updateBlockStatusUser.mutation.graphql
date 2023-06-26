@@ -1,0 +1,3 @@
+mutation updateBlockStatusUser($input: UpdateBlockStatusUserInput!) {
+  updateBlockStatusUser(input: $input)
+}

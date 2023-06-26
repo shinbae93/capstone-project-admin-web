@@ -311,7 +311,7 @@ export type Mutation = {
   createTutorReport: TutorReport;
   createTutorRequest: TutorRequest;
   createTutorReview: TutorReview;
-  deleteUser: User;
+  deleteUser: Scalars['Boolean']['output'];
   feedbackAssignment: Assignment;
   login: LoginOutput;
   loginAdmin: LoginOutput;
@@ -330,6 +330,7 @@ export type Mutation = {
   removeTutorRequest: Scalars['Boolean']['output'];
   removeTutorReview: Scalars['Boolean']['output'];
   submitAssignment: Assignment;
+  updateBlockStatusUser: Scalars['Boolean']['output'];
   updateClass: Class;
   updateCourse: Course;
   updateGrade: Grade;
@@ -483,6 +484,11 @@ export type MutationSubmitAssignmentArgs = {
 };
 
 
+export type MutationUpdateBlockStatusUserArgs = {
+  input: UpdateBlockStatusUserInput;
+};
+
+
 export type MutationUpdateClassArgs = {
   input: UpdateClassInput;
 };
@@ -572,7 +578,7 @@ export type Query = {
   getClass: Class;
   getMe: User;
   getUser: User;
-  getUsers: Array<User>;
+  getUsers: UserPagination;
   grade: Grade;
   grades: Array<Grade>;
   isEnrolled: Scalars['Boolean']['output'];
@@ -652,6 +658,11 @@ export type QueryGetClassArgs = {
 
 export type QueryGetUserArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryGetUsersArgs = {
+  queryParams: UserQueryParams;
 };
 
 
@@ -870,6 +881,11 @@ export type TutorReview = {
   updatedAt: Scalars['DateTime']['output'];
 };
 
+export type UpdateBlockStatusUserInput = {
+  id: Scalars['ID']['input'];
+  isBlocked: Scalars['Boolean']['input'];
+};
+
 export type UpdateClassInput = {
   id: Scalars['ID']['input'];
   method?: InputMaybe<ClassMethod>;
@@ -949,13 +965,34 @@ export type User = {
   createdAt: Scalars['DateTime']['output'];
   email: Scalars['String']['output'];
   fullName: Scalars['String']['output'];
-  gender: Scalars['Float']['output'];
+  gender: Gender;
   id: Scalars['ID']['output'];
+  isBlocked: Scalars['Boolean']['output'];
   phoneNumber: Scalars['String']['output'];
   role: Role;
   roleId: Scalars['String']['output'];
-  tutorDetail: TutorDetail;
+  tutorDetail?: Maybe<TutorDetail>;
   updatedAt: Scalars['DateTime']['output'];
+};
+
+export type UserFilterParams = {
+  email?: InputMaybe<Scalars['String']['input']>;
+  fullName?: InputMaybe<Scalars['String']['input']>;
+  gender?: InputMaybe<Gender>;
+  phoneNumber?: InputMaybe<Scalars['String']['input']>;
+  roleIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+};
+
+export type UserPagination = {
+  __typename?: 'UserPagination';
+  items: Array<User>;
+  meta: PaginationMeta;
+};
+
+export type UserQueryParams = {
+  filters?: InputMaybe<UserFilterParams>;
+  pagination?: InputMaybe<PaginateOptions>;
+  sorting?: InputMaybe<Array<SortField>>;
 };
 
 export type LoginMutationVariables = Exact<{
@@ -987,7 +1024,28 @@ export type RegisterMutation = { __typename?: 'Mutation', register: { __typename
 export type GetMeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMeQuery = { __typename?: 'Query', getMe: { __typename?: 'User', id: string, email: string, fullName: string, avatar?: string | null, phoneNumber: string, gender: number, birthday: any, roleId: string, createdAt: any, updatedAt: any, role: { __typename?: 'Role', name: string } } };
+export type GetMeQuery = { __typename?: 'Query', getMe: { __typename?: 'User', id: string, email: string, fullName: string, avatar?: string | null, phoneNumber: string, gender: Gender, birthday: any, roleId: string, createdAt: any, updatedAt: any, role: { __typename?: 'Role', name: string } } };
+
+export type GetUserQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type GetUserQuery = { __typename?: 'Query', getUser: { __typename?: 'User', id: string, avatar?: string | null, fullName: string, email: string, birthday: any, phoneNumber: string, gender: Gender, roleId: string, createdAt: any, updatedAt: any } };
+
+export type GetUsersQueryVariables = Exact<{
+  queryParams: UserQueryParams;
+}>;
+
+
+export type GetUsersQuery = { __typename?: 'Query', getUsers: { __typename?: 'UserPagination', meta: { __typename?: 'PaginationMeta', itemCount: number, totalItems: number, itemsPerPage: number, totalPages: number, currentPage: number }, items: Array<{ __typename?: 'User', id: string, avatar?: string | null, fullName: string, email: string, birthday: any, phoneNumber: string, gender: Gender, roleId: string, createdAt: any, updatedAt: any, tutorDetail?: { __typename?: 'TutorDetail', cv: string } | null, role: { __typename?: 'Role', name: string } }> } };
+
+export type UpdateBlockStatusUserMutationVariables = Exact<{
+  input: UpdateBlockStatusUserInput;
+}>;
+
+
+export type UpdateBlockStatusUserMutation = { __typename?: 'Mutation', updateBlockStatusUser: boolean };
 
 
 export const LoginDocument = gql`
@@ -1164,3 +1222,137 @@ export function useGetMeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetM
 export type GetMeQueryHookResult = ReturnType<typeof useGetMeQuery>;
 export type GetMeLazyQueryHookResult = ReturnType<typeof useGetMeLazyQuery>;
 export type GetMeQueryResult = Apollo.QueryResult<GetMeQuery, GetMeQueryVariables>;
+export const GetUserDocument = gql`
+    query getUser($id: ID!) {
+  getUser(id: $id) {
+    id
+    avatar
+    fullName
+    email
+    birthday
+    phoneNumber
+    gender
+    roleId
+    createdAt
+    updatedAt
+  }
+}
+    `;
+
+/**
+ * __useGetUserQuery__
+ *
+ * To run a query within a React component, call `useGetUserQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetUserQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetUserQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useGetUserQuery(baseOptions: Apollo.QueryHookOptions<GetUserQuery, GetUserQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetUserQuery, GetUserQueryVariables>(GetUserDocument, options);
+      }
+export function useGetUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetUserQuery, GetUserQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetUserQuery, GetUserQueryVariables>(GetUserDocument, options);
+        }
+export type GetUserQueryHookResult = ReturnType<typeof useGetUserQuery>;
+export type GetUserLazyQueryHookResult = ReturnType<typeof useGetUserLazyQuery>;
+export type GetUserQueryResult = Apollo.QueryResult<GetUserQuery, GetUserQueryVariables>;
+export const GetUsersDocument = gql`
+    query getUsers($queryParams: UserQueryParams!) {
+  getUsers(queryParams: $queryParams) {
+    meta {
+      itemCount
+      totalItems
+      itemsPerPage
+      totalPages
+      currentPage
+    }
+    items {
+      id
+      avatar
+      fullName
+      email
+      birthday
+      phoneNumber
+      gender
+      roleId
+      tutorDetail {
+        cv
+      }
+      role {
+        name
+      }
+      createdAt
+      updatedAt
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetUsersQuery__
+ *
+ * To run a query within a React component, call `useGetUsersQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetUsersQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetUsersQuery({
+ *   variables: {
+ *      queryParams: // value for 'queryParams'
+ *   },
+ * });
+ */
+export function useGetUsersQuery(baseOptions: Apollo.QueryHookOptions<GetUsersQuery, GetUsersQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetUsersQuery, GetUsersQueryVariables>(GetUsersDocument, options);
+      }
+export function useGetUsersLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetUsersQuery, GetUsersQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetUsersQuery, GetUsersQueryVariables>(GetUsersDocument, options);
+        }
+export type GetUsersQueryHookResult = ReturnType<typeof useGetUsersQuery>;
+export type GetUsersLazyQueryHookResult = ReturnType<typeof useGetUsersLazyQuery>;
+export type GetUsersQueryResult = Apollo.QueryResult<GetUsersQuery, GetUsersQueryVariables>;
+export const UpdateBlockStatusUserDocument = gql`
+    mutation updateBlockStatusUser($input: UpdateBlockStatusUserInput!) {
+  updateBlockStatusUser(input: $input)
+}
+    `;
+export type UpdateBlockStatusUserMutationFn = Apollo.MutationFunction<UpdateBlockStatusUserMutation, UpdateBlockStatusUserMutationVariables>;
+
+/**
+ * __useUpdateBlockStatusUserMutation__
+ *
+ * To run a mutation, you first call `useUpdateBlockStatusUserMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateBlockStatusUserMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateBlockStatusUserMutation, { data, loading, error }] = useUpdateBlockStatusUserMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateBlockStatusUserMutation(baseOptions?: Apollo.MutationHookOptions<UpdateBlockStatusUserMutation, UpdateBlockStatusUserMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateBlockStatusUserMutation, UpdateBlockStatusUserMutationVariables>(UpdateBlockStatusUserDocument, options);
+      }
+export type UpdateBlockStatusUserMutationHookResult = ReturnType<typeof useUpdateBlockStatusUserMutation>;
+export type UpdateBlockStatusUserMutationResult = Apollo.MutationResult<UpdateBlockStatusUserMutation>;
+export type UpdateBlockStatusUserMutationOptions = Apollo.BaseMutationOptions<UpdateBlockStatusUserMutation, UpdateBlockStatusUserMutationVariables>;

@@ -16,11 +16,10 @@ function App() {
   return (
     <div className="App">
       <Routes>
-        <Route path="/auth" element={<AuthLayout />}>
+        <Route element={<AuthLayout />}>
           <Route path="login" element={<Login />} />
         </Route>
         <Route
-          path="/"
           element={
             <PrivateRoute>
               <MainLayout />

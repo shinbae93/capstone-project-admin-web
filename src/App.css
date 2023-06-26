@@ -3,11 +3,6 @@
   width: 100vw;
 }
 
-.ant-pagination-item-active {
-  border: 1px #ffb606 solid !important;
-  background-color: #ffb606 !important;
-}
-
-.ant-pagination-item-active a {
-  color: white !important;
+.ant-switch.ant-switch-checked {
+  background: #1677ff !important;
 }

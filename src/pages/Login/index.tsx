@@ -1,6 +1,6 @@
 import { Button, Checkbox, Col, Form, Input, Row } from 'antd'
 import { Link } from 'react-router-dom'
-import useAuthenication from '../hooks/useAuthentication'
+import useAuthenication from '../../hooks/useAuthentication'
 
 const Login = () => {
   const { handleLogin, loginLoading } = useAuthenication()
