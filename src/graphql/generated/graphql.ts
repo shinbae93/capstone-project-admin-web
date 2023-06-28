@@ -94,6 +94,7 @@ export type ChargeInput = {
 
 export type Class = {
   __typename?: 'Class';
+  address?: Maybe<Scalars['String']['output']>;
   course: Course;
   courseId: Scalars['String']['output'];
   createdAt: Scalars['DateTime']['output'];
@@ -124,6 +125,7 @@ export type ClassQueryParams = {
 
 export type Course = {
   __typename?: 'Course';
+  address?: Maybe<Scalars['String']['output']>;
   classes?: Maybe<Array<Class>>;
   createdAt: Scalars['DateTime']['output'];
   description?: Maybe<Scalars['String']['output']>;
@@ -222,8 +224,9 @@ export type CreateSubjectInput = {
 };
 
 export type CreateTutorReportInput = {
-  /** Example field (placeholder) */
-  exampleField: Scalars['Int']['input'];
+  images?: InputMaybe<Array<Scalars['String']['input']>>;
+  reason: Scalars['String']['input'];
+  tutorId: Scalars['String']['input'];
 };
 
 export type CreateTutorRequestInput = {
@@ -288,6 +291,12 @@ export type Grade = {
   updatedAt: Scalars['DateTime']['output'];
 };
 
+export type GradePagination = {
+  __typename?: 'GradePagination';
+  items: Array<Grade>;
+  meta: PaginationMeta;
+};
+
 export type LoginInput = {
   email: Scalars['String']['input'];
   password: Scalars['String']['input'];
@@ -326,7 +335,6 @@ export type Mutation = {
   removePayment: Payment;
   removeQuiz: Scalars['Boolean']['output'];
   removeSubject: Scalars['Boolean']['output'];
-  removeTutorReport: TutorReport;
   removeTutorRequest: Scalars['Boolean']['output'];
   removeTutorReview: Scalars['Boolean']['output'];
   submitAssignment: Assignment;
@@ -337,7 +345,6 @@ export type Mutation = {
   updateQuiz: Quiz;
   updateSubject: Subject;
   updateTutorDetail: TutorDetail;
-  updateTutorReport: TutorReport;
   updateTutorRequest: TutorRequest;
   updateTutorRequestStatus: TutorRequest;
   updateTutorReview: TutorReview;
@@ -464,11 +471,6 @@ export type MutationRemoveSubjectArgs = {
 };
 
 
-export type MutationRemoveTutorReportArgs = {
-  id: Scalars['Int']['input'];
-};
-
-
 export type MutationRemoveTutorRequestArgs = {
   id: Scalars['ID']['input'];
 };
@@ -516,11 +518,6 @@ export type MutationUpdateSubjectArgs = {
 
 export type MutationUpdateTutorDetailArgs = {
   input: UpdateTutorDetailInput;
-};
-
-
-export type MutationUpdateTutorReportArgs = {
-  updateTutorReportInput: UpdateTutorReportInput;
 };
 
 
@@ -580,7 +577,7 @@ export type Query = {
   getUser: User;
   getUsers: UserPagination;
   grade: Grade;
-  grades: Array<Grade>;
+  grades: GradePagination;
   isEnrolled: Scalars['Boolean']['output'];
   myAssignments: AssignmentPagination;
   myCalendars: Array<Calendar>;
@@ -591,13 +588,14 @@ export type Query = {
   quiz: Quiz;
   quizzes: QuizPagination;
   subject: Subject;
-  subjects: Array<Subject>;
+  subjects: SubjectPagination;
   tutorDetail: TutorDetail;
   tutorReport: TutorReport;
+  tutorReports: TutorReportPagination;
   tutorRequest: TutorRequest;
-  tutorRequests: Array<TutorRequest>;
+  tutorRequests: TutorRequestPagination;
   tutorReview: TutorReview;
-  tutorReviews: Array<TutorReview>;
+  tutorReviews: TutorReviewPagination;
 };
 
 
@@ -671,6 +669,11 @@ export type QueryGradeArgs = {
 };
 
 
+export type QueryGradesArgs = {
+  queryParams: QueryParams;
+};
+
+
 export type QueryIsEnrolledArgs = {
   courseId: Scalars['ID']['input'];
 };
@@ -716,13 +719,23 @@ export type QuerySubjectArgs = {
 };
 
 
+export type QuerySubjectsArgs = {
+  queryParams: QueryParams;
+};
+
+
 export type QueryTutorDetailArgs = {
   id: Scalars['ID']['input'];
 };
 
 
 export type QueryTutorReportArgs = {
-  id: Scalars['Int']['input'];
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryTutorReportsArgs = {
+  queryParams: TutorReportQueryParams;
 };
 
 
@@ -731,8 +744,23 @@ export type QueryTutorRequestArgs = {
 };
 
 
+export type QueryTutorRequestsArgs = {
+  queryParams: TutorRequestQueryParams;
+};
+
+
 export type QueryTutorReviewArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryTutorReviewsArgs = {
+  queryParams: TutorReviewQueryParams;
+};
+
+export type QueryParams = {
+  pagination?: InputMaybe<PaginateOptions>;
+  sorting?: InputMaybe<Array<SortField>>;
 };
 
 export type Quiz = {
@@ -828,6 +856,12 @@ export type Subject = {
   updatedAt: Scalars['DateTime']['output'];
 };
 
+export type SubjectPagination = {
+  __typename?: 'SubjectPagination';
+  items: Array<Subject>;
+  meta: PaginationMeta;
+};
+
 export type SubmitAssignmentInput = {
   files: Array<Scalars['String']['input']>;
   id: Scalars['ID']['input'];
@@ -844,8 +878,31 @@ export type TutorDetail = {
 
 export type TutorReport = {
   __typename?: 'TutorReport';
-  /** Example field (placeholder) */
-  exampleField: Scalars['Int']['output'];
+  author: User;
+  authorId: Scalars['String']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  id: Scalars['ID']['output'];
+  images?: Maybe<Array<Scalars['String']['output']>>;
+  reason: Scalars['String']['output'];
+  status: Scalars['String']['output'];
+  tutor: User;
+  tutorId: Scalars['String']['output'];
+};
+
+export type TutorReportFilterParams = {
+  tutorId?: InputMaybe<Scalars['ID']['input']>;
+};
+
+export type TutorReportPagination = {
+  __typename?: 'TutorReportPagination';
+  items: Array<TutorReport>;
+  meta: PaginationMeta;
+};
+
+export type TutorReportQueryParams = {
+  filters?: InputMaybe<TutorReportFilterParams>;
+  pagination?: InputMaybe<PaginateOptions>;
+  sorting?: InputMaybe<Array<SortField>>;
 };
 
 export type TutorRequest = {
@@ -859,11 +916,21 @@ export type TutorRequest = {
   userId: Scalars['String']['output'];
 };
 
+export type TutorRequestPagination = {
+  __typename?: 'TutorRequestPagination';
+  items: Array<TutorRequest>;
+  meta: PaginationMeta;
+};
+
+export type TutorRequestQueryParams = {
+  pagination?: InputMaybe<PaginateOptions>;
+  sorting?: InputMaybe<Array<SortField>>;
+};
+
 export enum TutorRequestStatus {
   Accepted = 'ACCEPTED',
   Canceled = 'CANCELED',
   Pending = 'PENDING',
-  Processing = 'PROCESSING',
   Rejected = 'REJECTED'
 }
 
@@ -879,6 +946,22 @@ export type TutorReview = {
   tutor: User;
   tutorId: Scalars['String']['output'];
   updatedAt: Scalars['DateTime']['output'];
+};
+
+export type TutorReviewFilterParams = {
+  tutorId?: InputMaybe<Scalars['ID']['input']>;
+};
+
+export type TutorReviewPagination = {
+  __typename?: 'TutorReviewPagination';
+  items: Array<TutorReview>;
+  meta: PaginationMeta;
+};
+
+export type TutorReviewQueryParams = {
+  filters?: InputMaybe<TutorReviewFilterParams>;
+  pagination?: InputMaybe<PaginateOptions>;
+  sorting?: InputMaybe<Array<SortField>>;
 };
 
 export type UpdateBlockStatusUserInput = {
@@ -933,12 +1016,6 @@ export type UpdateSubjectInput = {
 export type UpdateTutorDetailInput = {
   cv: Scalars['String']['input'];
   id: Scalars['ID']['input'];
-};
-
-export type UpdateTutorReportInput = {
-  /** Example field (placeholder) */
-  exampleField?: InputMaybe<Scalars['Int']['input']>;
-  id: Scalars['Int']['input'];
 };
 
 export type UpdateTutorRequestInput = {
@@ -1020,6 +1097,20 @@ export type RegisterMutationVariables = Exact<{
 
 
 export type RegisterMutation = { __typename?: 'Mutation', register: { __typename?: 'User', id: string } };
+
+export type TutorRequestsQueryVariables = Exact<{
+  queryParams: TutorRequestQueryParams;
+}>;
+
+
+export type TutorRequestsQuery = { __typename?: 'Query', tutorRequests: { __typename?: 'TutorRequestPagination', meta: { __typename?: 'PaginationMeta', itemCount: number, totalItems: number, itemsPerPage: number, totalPages: number, currentPage: number }, items: Array<{ __typename?: 'TutorRequest', id: string, cv: string, status: TutorRequestStatus, createdAt: any, updatedAt: any, user: { __typename?: 'User', fullName: string, email: string, phoneNumber: string } }> } };
+
+export type UpdateTutorRequestStatusMutationVariables = Exact<{
+  input: UpdateTutorRequestStatusInput;
+}>;
+
+
+export type UpdateTutorRequestStatusMutation = { __typename?: 'Mutation', updateTutorRequestStatus: { __typename?: 'TutorRequest', id: string } };
 
 export type GetMeQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1176,6 +1267,92 @@ export function useRegisterMutation(baseOptions?: Apollo.MutationHookOptions<Reg
 export type RegisterMutationHookResult = ReturnType<typeof useRegisterMutation>;
 export type RegisterMutationResult = Apollo.MutationResult<RegisterMutation>;
 export type RegisterMutationOptions = Apollo.BaseMutationOptions<RegisterMutation, RegisterMutationVariables>;
+export const TutorRequestsDocument = gql`
+    query tutorRequests($queryParams: TutorRequestQueryParams!) {
+  tutorRequests(queryParams: $queryParams) {
+    meta {
+      itemCount
+      totalItems
+      itemsPerPage
+      totalPages
+      currentPage
+    }
+    items {
+      id
+      cv
+      status
+      user {
+        fullName
+        email
+        phoneNumber
+      }
+      createdAt
+      updatedAt
+    }
+  }
+}
+    `;
+
+/**
+ * __useTutorRequestsQuery__
+ *
+ * To run a query within a React component, call `useTutorRequestsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useTutorRequestsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useTutorRequestsQuery({
+ *   variables: {
+ *      queryParams: // value for 'queryParams'
+ *   },
+ * });
+ */
+export function useTutorRequestsQuery(baseOptions: Apollo.QueryHookOptions<TutorRequestsQuery, TutorRequestsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<TutorRequestsQuery, TutorRequestsQueryVariables>(TutorRequestsDocument, options);
+      }
+export function useTutorRequestsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<TutorRequestsQuery, TutorRequestsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<TutorRequestsQuery, TutorRequestsQueryVariables>(TutorRequestsDocument, options);
+        }
+export type TutorRequestsQueryHookResult = ReturnType<typeof useTutorRequestsQuery>;
+export type TutorRequestsLazyQueryHookResult = ReturnType<typeof useTutorRequestsLazyQuery>;
+export type TutorRequestsQueryResult = Apollo.QueryResult<TutorRequestsQuery, TutorRequestsQueryVariables>;
+export const UpdateTutorRequestStatusDocument = gql`
+    mutation updateTutorRequestStatus($input: UpdateTutorRequestStatusInput!) {
+  updateTutorRequestStatus(input: $input) {
+    id
+  }
+}
+    `;
+export type UpdateTutorRequestStatusMutationFn = Apollo.MutationFunction<UpdateTutorRequestStatusMutation, UpdateTutorRequestStatusMutationVariables>;
+
+/**
+ * __useUpdateTutorRequestStatusMutation__
+ *
+ * To run a mutation, you first call `useUpdateTutorRequestStatusMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateTutorRequestStatusMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateTutorRequestStatusMutation, { data, loading, error }] = useUpdateTutorRequestStatusMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateTutorRequestStatusMutation(baseOptions?: Apollo.MutationHookOptions<UpdateTutorRequestStatusMutation, UpdateTutorRequestStatusMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateTutorRequestStatusMutation, UpdateTutorRequestStatusMutationVariables>(UpdateTutorRequestStatusDocument, options);
+      }
+export type UpdateTutorRequestStatusMutationHookResult = ReturnType<typeof useUpdateTutorRequestStatusMutation>;
+export type UpdateTutorRequestStatusMutationResult = Apollo.MutationResult<UpdateTutorRequestStatusMutation>;
+export type UpdateTutorRequestStatusMutationOptions = Apollo.BaseMutationOptions<UpdateTutorRequestStatusMutation, UpdateTutorRequestStatusMutationVariables>;
 export const GetMeDocument = gql`
     query getMe {
   getMe {

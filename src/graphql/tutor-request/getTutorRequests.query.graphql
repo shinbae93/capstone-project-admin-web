@@ -1,0 +1,23 @@
+query tutorRequests($queryParams: TutorRequestQueryParams!) {
+  tutorRequests(queryParams: $queryParams) {
+    meta {
+      itemCount
+      totalItems
+      itemsPerPage
+      totalPages
+      currentPage
+    }
+    items {
+      id
+      cv
+      status
+      user {
+        fullName
+        email
+        phoneNumber
+      }
+      createdAt
+      updatedAt
+    }
+  }
+}

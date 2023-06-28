@@ -29,8 +29,8 @@ interface UserItemDataType {
 
 type UserItemDataIndex = keyof UserItemDataType
 
-const convertUserItems = (courses: User[]) => {
-  return courses.map<UserItemDataType>((item) => ({
+const convertUserItems = (users: User[]) => {
+  return users.map<UserItemDataType>((item) => ({
     id: item.id,
     avatar: item.avatar || DEFAULT_AVATAR,
     fullName: item.fullName,

@@ -1,0 +1,5 @@
+mutation updateTutorRequestStatus($input: UpdateTutorRequestStatusInput!) {
+  updateTutorRequestStatus(input: $input) {
+    id
+  }
+}

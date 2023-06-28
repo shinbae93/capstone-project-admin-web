@@ -6,3 +6,11 @@
 .ant-switch.ant-switch-checked {
   background: #1677ff !important;
 }
+
+.ant-btn-primary {
+  background-color: #1677ff !important;
+}
+
+.ant-btn {
+  font-weight: 600;
+}
