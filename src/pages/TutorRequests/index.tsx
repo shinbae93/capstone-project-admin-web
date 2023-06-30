@@ -151,7 +151,6 @@ const TutorRequests = () => {
     {
       title: 'Full name',
       dataIndex: 'fullName',
-
       sorter: (a, b) => a.fullName.length - b.fullName.length,
       sortDirections: ['descend', 'ascend'],
       ...getColumnSearchProps('fullName'),
@@ -210,7 +209,7 @@ const TutorRequests = () => {
           <>
             <Tooltip title="Accept">
               <CheckOutlined
-                className="text-primary text-lg"
+                className="text-success text-lg"
                 onClick={() =>
                   Modal.confirm({
                     title: 'Are you sure to reject this request?',
@@ -234,7 +233,7 @@ const TutorRequests = () => {
             </Tooltip>
             <Tooltip title="Reject">
               <StopOutlined
-                className="text-red-600 text-lg"
+                className="text-[#f5222d] text-lg"
                 onClick={() =>
                   Modal.confirm({
                     title: 'Are you sure to reject this request?',

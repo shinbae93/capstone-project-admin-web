@@ -153,7 +153,6 @@ const Users = () => {
     {
       title: 'Full name',
       dataIndex: 'fullName',
-
       sorter: (a, b) => a.fullName.length - b.fullName.length,
       sortDirections: ['descend', 'ascend'],
       ...getColumnSearchProps('fullName'),

@@ -5,10 +5,12 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#1677FF',
+        primary: '#FFB606',
+        secondary: '#FFB606',
         gray: '#E8EBED',
         price: 'rgba(255,34,68,0.8)',
         lighterBlack: '#424242',
+        success: '#52c41a',
       },
       backgroundColor: {
         breadcrumb: '#F3F3F3',

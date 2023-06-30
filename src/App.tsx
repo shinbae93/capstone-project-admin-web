@@ -6,11 +6,13 @@ import NotFoundPage from './pages/404'
 import Courses from './pages/Courses'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
-import Settings from './pages/Settings'
+import Payments from './pages/Payments'
 import TutorReports from './pages/TutorReports'
 import TutorRequests from './pages/TutorRequests'
 import Users from './pages/Users'
 import PrivateRoute from './routers/PrivateRoute'
+import Grades from './pages/Grades'
+import Subjects from './pages/Subjects'
 
 function App() {
   return (
@@ -31,7 +33,9 @@ function App() {
           <Route path="tutor-requests" element={<TutorRequests />} />
           <Route path="tutor-reports" element={<TutorReports />} />
           <Route path="courses" element={<Courses />} />
-          <Route path="settings" element={<Settings />} />
+          <Route path="payments" element={<Payments />} />
+          <Route path="grades" element={<Grades />} />
+          <Route path="subjects" element={<Subjects />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

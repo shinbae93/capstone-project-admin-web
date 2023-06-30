@@ -4,11 +4,15 @@
 }
 
 .ant-switch.ant-switch-checked {
-  background: #1677ff !important;
+  background: #ffb606 !important;
 }
 
 .ant-btn-primary {
-  background-color: #1677ff !important;
+  background-color: #ffb606 !important;
+}
+
+.ant-menu-item-selected {
+  background-color: #ffb606 !important;
 }
 
 .ant-btn {

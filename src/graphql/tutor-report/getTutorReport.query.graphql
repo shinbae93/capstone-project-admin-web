@@ -1,0 +1,28 @@
+query tutorReports($queryParams: TutorReportQueryParams!) {
+  tutorReports(queryParams: $queryParams) {
+    meta {
+      itemCount
+      totalItems
+      itemsPerPage
+      totalPages
+      currentPage
+    }
+    items {
+      id
+      reason
+      files
+      status
+      tutor {
+        id
+        fullName
+        avatar
+      }
+      author {
+        id
+        fullName
+        avatar
+      }
+      createdAt
+    }
+  }
+}

@@ -1,11 +1,13 @@
 import {
   AppstoreAddOutlined,
   AuditOutlined,
+  BookOutlined,
   CalendarOutlined,
+  DollarOutlined,
   FileExclamationOutlined,
+  IdcardOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
-  SettingOutlined,
   UserOutlined,
 } from '@ant-design/icons'
 import { Button, Dropdown, Layout, Menu, theme } from 'antd'
@@ -62,7 +64,7 @@ const MainLayout = () => {
             {
               key: 'tutor-requests',
               icon: <AuditOutlined />,
-              label: 'Tutor requests',
+              label: 'Tutor Requests',
               onClick: () => {
                 navigate('/tutor-requests')
               },
@@ -70,7 +72,7 @@ const MainLayout = () => {
             {
               key: 'tutor-reports',
               icon: <FileExclamationOutlined />,
-              label: 'Tutor reports',
+              label: 'Tutor Reports',
               onClick: () => {
                 navigate('/tutor-reports')
               },
@@ -84,11 +86,27 @@ const MainLayout = () => {
               },
             },
             {
-              key: 'settings',
-              icon: <SettingOutlined />,
-              label: 'Settings',
+              key: 'payments',
+              icon: <DollarOutlined />,
+              label: 'Payments',
               onClick: () => {
-                navigate('/settings')
+                navigate('/payments')
+              },
+            },
+            {
+              key: 'grades',
+              icon: <IdcardOutlined />,
+              label: 'Grades',
+              onClick: () => {
+                navigate('/grades')
+              },
+            },
+            {
+              key: 'subjects',
+              icon: <BookOutlined />,
+              label: 'Subjects',
+              onClick: () => {
+                navigate('/subjects')
               },
             },
           ]}

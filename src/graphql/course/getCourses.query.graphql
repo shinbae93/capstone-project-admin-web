@@ -1,0 +1,36 @@
+query courses($queryParams: CourseQueryParams!) {
+  courses(queryParams: $queryParams) {
+    meta {
+      itemCount
+      totalItems
+      itemsPerPage
+      totalPages
+      currentPage
+    }
+    items {
+      id
+      name
+      thumbnail
+      fee
+      status
+      startDate
+      endDate
+      user {
+        id
+        avatar
+        fullName
+        email
+      }
+      grade {
+        id
+        name
+      }
+      subject {
+        id
+        name
+      }
+      createdAt
+      updatedAt
+    }
+  }
+}

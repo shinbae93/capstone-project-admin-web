@@ -14,12 +14,13 @@ const PrivateRoute: FC<PrivateRouteProps> = ({ children }) => {
   const [loading, setLoading] = useState(true)
   const { setCurrentUser } = useContext(AuthContext)
   const [getMe] = useGetMeLazyQuery()
+
   useEffect(() => {
     ;(async () => {
       setLoading(true)
       const accessToken = getToken()
       if (!accessToken) {
-        navigate('/auth/login', {
+        navigate('/login', {
           replace: true,
         })
       }
