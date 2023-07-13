@@ -143,7 +143,7 @@ const MainLayout = () => {
                     key: '0',
                     label: (
                       <Link to="/profile/general">
-                        <p className="px-1 font-light text-sm my-1">Edit profile</p>
+                        <p className="px-1 text-sm my-1">Edit profile</p>
                       </Link>
                     ),
                   },
@@ -151,14 +151,14 @@ const MainLayout = () => {
                     key: '1',
                     label: (
                       <Link to="/profile/change-password">
-                        <p className="px-1 font-light text-sm my-1">Change password</p>
+                        <p className="px-1 text-sm my-1">Change password</p>
                       </Link>
                     ),
                   },
                   {
                     key: '2',
                     danger: true,
-                    label: <p className="px-1 font-light text-sm my-1">Log out</p>,
+                    label: <p className="px-1 text-sm my-1">Log out</p>,
                     onClick: handleLogout,
                   },
                 ],

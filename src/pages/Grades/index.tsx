@@ -1,12 +1,24 @@
-import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
-import { Button, Input, InputRef, Space, Table, Tooltip } from 'antd'
+import {
+  DeleteOutlined,
+  EditOutlined,
+  ExclamationCircleFilled,
+  PlusOutlined,
+  SearchOutlined,
+} from '@ant-design/icons'
+import { Button, Form, Input, InputRef, Modal, Space, Table, Tooltip, notification } from 'antd'
 import { ColumnType, ColumnsType, FilterConfirmProps } from 'antd/es/table/interface'
 import dayjs from 'dayjs'
 import { useRef, useState } from 'react'
 import Highlighter from 'react-highlight-words'
 import { DEFAULT_LIMIT_ITEMS } from '../../common/constants'
 import Loading from '../../components/Loading'
-import { Grade, useGradesQuery } from '../../graphql/generated/graphql'
+import {
+  Grade,
+  useCreateGradeMutation,
+  useGradesQuery,
+  useRemoveGradeMutation,
+  useUpdateGradeMutation,
+} from '../../graphql/generated/graphql'
 
 interface GradeItemDataType {
   id: string
@@ -30,6 +42,12 @@ const Grades = () => {
   const [searchText, setSearchText] = useState('')
   const [searchedColumn, setSearchedColumn] = useState('')
   const [page, setPage] = useState(1)
+  const [isOpen, setIsOpen] = useState(false)
+  const [selectedGrade, setSelectedGrade] = useState<Grade | null>(null)
+  const [form] = Form.useForm()
+  const [createGrade] = useCreateGradeMutation()
+  const [updateGrade] = useUpdateGradeMutation()
+  const [removeGrade] = useRemoveGradeMutation()
 
   const searchInput = useRef<InputRef>(null)
 
@@ -151,51 +169,29 @@ const Grades = () => {
         <Space size="middle">
           <>
             <Tooltip title="Edit">
-              <EditOutlined
-                className="text-lg"
-                // onClick={() =>
-                //   Modal.confirm({
-                //     title: 'Are you sure to reject this request?',
-                //     icon: <ExclamationCircleFilled />,
-                //     onOk() {
-                //       updateStatusTutorRequest({
-                //         variables: {
-                //           input: {
-                //             id: String(record.id),
-                //             status: TutorRequestStatus.Accepted,
-                //           },
-                //         },
-                //       }).then(() => {
-                //         toastUpdateSuccess()
-                //         refetch()
-                //       })
-                //     },
-                //   })
-                // }
-              />
+              <EditOutlined className="text-lg" onClick={() => setSelectedGrade(record)} />
             </Tooltip>
             <Tooltip title="Delete">
               <DeleteOutlined
-                className="text-lg"
-                // onClick={() =>
-                //   Modal.confirm({
-                //     title: 'Are you sure to reject this request?',
-                //     icon: <ExclamationCircleFilled />,
-                //     onOk() {
-                //       updateStatusTutorRequest({
-                //         variables: {
-                //           input: {
-                //             id: String(record.id),
-                //             status: TutorRequestStatus.Rejected,
-                //           },
-                //         },
-                //       }).then(() => {
-                //         toastUpdateSuccess()
-                //         refetch()
-                //       })
-                //     },
-                //   })
-                // }
+                className="text-lg text-price"
+                onClick={() =>
+                  Modal.confirm({
+                    title: 'Are you sure to delete this grade?',
+                    icon: <ExclamationCircleFilled />,
+                    onOk() {
+                      removeGrade({
+                        variables: {
+                          id: String(record.id),
+                        },
+                      }).then(() => {
+                        notification.success({
+                          message: 'Delete successfully !',
+                        })
+                        refetch()
+                      })
+                    },
+                  })
+                }
               />
             </Tooltip>
           </>
@@ -208,13 +204,107 @@ const Grades = () => {
     <Loading />
   ) : (
     <div>
+      <Modal
+        open={!!selectedGrade}
+        title="Update grade"
+        okText="Update"
+        cancelText="Cancel"
+        destroyOnClose={true}
+        onCancel={() => {
+          form.resetFields()
+          refetch()
+          setIsOpen(false)
+        }}
+        onOk={() => {
+          form.validateFields().then((values) => {
+            updateGrade({
+              variables: {
+                input: {
+                  id: selectedGrade?.id,
+                  ...values,
+                },
+              },
+              onCompleted: () => {
+                notification.success({ message: 'Update successfully !' })
+                form.resetFields()
+                refetch()
+                setSelectedGrade(null)
+              },
+            })
+          })
+        }}
+        className="w-2/5"
+      >
+        <Form
+          preserve={false}
+          form={form}
+          layout="vertical"
+          name="create_course_form"
+          className="p-4"
+        >
+          <Form.Item
+            name="name"
+            label="Name"
+            rules={[{ required: true, message: 'Please input name of the grade' }]}
+            initialValue={selectedGrade?.name}
+          >
+            <Input placeholder="Name" />
+          </Form.Item>
+        </Form>
+      </Modal>
+      <Modal
+        open={isOpen}
+        title="Create subject"
+        okText="Create"
+        cancelText="Cancel"
+        destroyOnClose={true}
+        onCancel={() => {
+          form.resetFields()
+          refetch()
+          setIsOpen(false)
+        }}
+        onOk={() => {
+          form.validateFields().then((values) => {
+            createGrade({
+              variables: {
+                input: {
+                  ...values,
+                },
+              },
+              onCompleted: () => {
+                notification.success({ message: 'Create successfully !' })
+                form.resetFields()
+                refetch()
+                setIsOpen(false)
+              },
+            })
+          })
+        }}
+        className="w-2/5"
+      >
+        <Form
+          preserve={false}
+          form={form}
+          layout="vertical"
+          name="create_course_form"
+          className="p-4"
+        >
+          <Form.Item
+            name="name"
+            label="Name"
+            rules={[{ required: true, message: 'Please input name of the grade' }]}
+          >
+            <Input placeholder="Name" />
+          </Form.Item>
+        </Form>
+      </Modal>
       <div className="py-5 px-4 flex justify-end">
         <Button
           type="primary"
           icon={<PlusOutlined className="inline-block align-middle" />}
-          // onClick={() => {
-          //   setOpenCreateModal(true)
-          // }}
+          onClick={() => {
+            setIsOpen(true)
+          }}
         >
           <span>
             <p className="font-medium">Create</p>

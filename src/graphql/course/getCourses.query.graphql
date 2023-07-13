@@ -11,10 +11,7 @@ query courses($queryParams: CourseQueryParams!) {
       id
       name
       thumbnail
-      fee
       status
-      startDate
-      endDate
       user {
         id
         avatar

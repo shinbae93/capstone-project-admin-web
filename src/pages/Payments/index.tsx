@@ -1,13 +1,12 @@
-import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
-import { Button, Input, InputRef, Space, Table, Tooltip } from 'antd'
+import { SearchOutlined } from '@ant-design/icons'
+import { Button, Input, InputRef, Space, Table } from 'antd'
 import { ColumnType, ColumnsType, FilterConfirmProps } from 'antd/es/table/interface'
 import dayjs from 'dayjs'
 import { useRef, useState } from 'react'
 import Highlighter from 'react-highlight-words'
-import { DEFAULT_LIMIT_ITEMS } from '../../common/constants'
-import Loading from '../../components/Loading'
-import { Subject, useSubjectsQuery } from '../../graphql/generated/graphql'
 import { CurrencyFormatter } from '../../utils/format'
+import { Payment, useGetPaymentsQuery } from '../../graphql/generated/graphql'
+import { DEFAULT_LIMIT_ITEMS } from '../../common/constants'
 
 interface SubjectItemDataType {
   id: string
@@ -15,44 +14,21 @@ interface SubjectItemDataType {
   email: string
   amount: number
   note: string
-  status: string
-  paidAt: Date
   createdAt: Date
 }
 
 type SubjectItemDataIndex = keyof SubjectItemDataType
 
-// const convertUserItems = (subjects: Subject[]) => {
-//   return subjects.map<SubjectItemDataType>((item) => ({
-//     id: item.id,
-//     name: item.name,
-//     createdAt: item.createdAt,
-//     updatedAt: item.updatedAt,
-//   }))
-// }
-
-const data: SubjectItemDataType[] = [
-  {
-    id: '1',
-    fullName: 'Hung Nguyen',
-    email: 'sine.hungnguyen@gmail.com',
-    amount: 100000,
-    note: 'Hoc phi thang 5',
-    status: 'Paid',
-    paidAt: new Date('20/05/2023 20:53:12'),
-    createdAt: new Date('20/05/2023 20:53:12'),
-  },
-  {
-    id: '2',
-    fullName: 'Hung Nguyen',
-    email: 'sine.hungnguyen@gmail.com',
-    amount: 20000,
-    note: 'Hoc phi thang 6',
-    status: 'Paid',
-    paidAt: new Date('20/06/2023 20:53:12'),
-    createdAt: new Date('20/06/2023 20:53:12'),
-  },
-]
+const convertPaymentItem = (payments: Payment[]) => {
+  return payments.map<SubjectItemDataType>((item) => ({
+    id: item.id,
+    fullName: item?.user?.fullName,
+    email: item?.user?.email,
+    amount: item.amount,
+    note: item.note,
+    createdAt: item.createdAt,
+  }))
+}
 
 const Payments = () => {
   const [searchText, setSearchText] = useState('')
@@ -60,6 +36,20 @@ const Payments = () => {
   const [page, setPage] = useState(1)
 
   const searchInput = useRef<InputRef>(null)
+
+  const { data, loading, refetch } = useGetPaymentsQuery({
+    variables: {
+      queryParams: {
+        filters: {
+          isAdmin: true,
+        },
+        pagination: {
+          limit: DEFAULT_LIMIT_ITEMS,
+          page,
+        },
+      },
+    },
+  })
 
   const handleSearch = (
     selectedKeys: string[],
@@ -164,82 +154,10 @@ const Payments = () => {
       render: (value) => CurrencyFormatter.format(value),
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
-      sorter: (a, b) => a.status.length - b.status.length,
-      sortDirections: ['descend', 'ascend'],
-    },
-    {
       title: 'Paid at',
-      dataIndex: 'paidAt',
-      sorter: (a, b) => +dayjs(a.paidAt).isBefore(dayjs(b.paidAt)),
-      sortDirections: ['descend', 'ascend'],
-      render: (value) => dayjs(value).format('DD/MM/YYYY HH:mm:ss'),
-    },
-    {
-      title: 'Created at',
       dataIndex: 'createdAt',
       sorter: (a, b) => +dayjs(a.createdAt).isBefore(dayjs(b.createdAt)),
       sortDirections: ['descend', 'ascend'],
-      render: (value) => dayjs(value).format('DD/MM/YYYY HH:mm:ss'),
-    },
-    {
-      title: 'Action',
-      fixed: 'right',
-      render: (_, record) => (
-        <Space size="middle">
-          <>
-            <Tooltip title="Edit">
-              <EditOutlined
-                className="text-lg"
-                // onClick={() =>
-                //   Modal.confirm({
-                //     title: 'Are you sure to reject this request?',
-                //     icon: <ExclamationCircleFilled />,
-                //     onOk() {
-                //       updateStatusTutorRequest({
-                //         variables: {
-                //           input: {
-                //             id: String(record.id),
-                //             status: TutorRequestStatus.Accepted,
-                //           },
-                //         },
-                //       }).then(() => {
-                //         toastUpdateSuccess()
-                //         refetch()
-                //       })
-                //     },
-                //   })
-                // }
-              />
-            </Tooltip>
-            <Tooltip title="Delete">
-              <DeleteOutlined
-                className="text-lg"
-                // onClick={() =>
-                //   Modal.confirm({
-                //     title: 'Are you sure to reject this request?',
-                //     icon: <ExclamationCircleFilled />,
-                //     onOk() {
-                //       updateStatusTutorRequest({
-                //         variables: {
-                //           input: {
-                //             id: String(record.id),
-                //             status: TutorRequestStatus.Rejected,
-                //           },
-                //         },
-                //       }).then(() => {
-                //         toastUpdateSuccess()
-                //         refetch()
-                //       })
-                //     },
-                //   })
-                // }
-              />
-            </Tooltip>
-          </>
-        </Space>
-      ),
     },
   ]
 
@@ -247,7 +165,7 @@ const Payments = () => {
     <div>
       <Table
         columns={columns}
-        dataSource={data || []}
+        dataSource={convertPaymentItem(data?.payments?.items as Payment[]) || []}
         size="large"
         tableLayout="fixed"
         scroll={{ y: '70vh' }}

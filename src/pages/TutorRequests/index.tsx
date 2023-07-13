@@ -206,56 +206,58 @@ const TutorRequests = () => {
       fixed: 'right',
       render: (_, record) => (
         <Space size="middle">
-          <>
-            <Tooltip title="Accept">
-              <CheckOutlined
-                className="text-success text-lg"
-                onClick={() =>
-                  Modal.confirm({
-                    title: 'Are you sure to reject this request?',
-                    icon: <ExclamationCircleFilled />,
-                    onOk() {
-                      updateStatusTutorRequest({
-                        variables: {
-                          input: {
-                            id: String(record.id),
-                            status: TutorRequestStatus.Accepted,
+          {TutorRequestStatus.Pending == record.status && (
+            <>
+              <Tooltip title="Accept">
+                <CheckOutlined
+                  className="text-success text-lg"
+                  onClick={() =>
+                    Modal.confirm({
+                      title: 'Are you sure to accept this request?',
+                      icon: <ExclamationCircleFilled />,
+                      onOk() {
+                        updateStatusTutorRequest({
+                          variables: {
+                            input: {
+                              id: String(record.id),
+                              status: TutorRequestStatus.Accepted,
+                            },
                           },
-                        },
-                      }).then(() => {
-                        toastUpdateSuccess()
-                        refetch()
-                      })
-                    },
-                  })
-                }
-              />
-            </Tooltip>
-            <Tooltip title="Reject">
-              <StopOutlined
-                className="text-[#f5222d] text-lg"
-                onClick={() =>
-                  Modal.confirm({
-                    title: 'Are you sure to reject this request?',
-                    icon: <ExclamationCircleFilled />,
-                    onOk() {
-                      updateStatusTutorRequest({
-                        variables: {
-                          input: {
-                            id: String(record.id),
-                            status: TutorRequestStatus.Rejected,
+                        }).then(() => {
+                          toastUpdateSuccess()
+                          refetch()
+                        })
+                      },
+                    })
+                  }
+                />
+              </Tooltip>
+              <Tooltip title="Reject">
+                <StopOutlined
+                  className="text-[#f5222d] text-lg"
+                  onClick={() =>
+                    Modal.confirm({
+                      title: 'Are you sure to reject this request?',
+                      icon: <ExclamationCircleFilled />,
+                      onOk() {
+                        updateStatusTutorRequest({
+                          variables: {
+                            input: {
+                              id: String(record.id),
+                              status: TutorRequestStatus.Rejected,
+                            },
                           },
-                        },
-                      }).then(() => {
-                        toastUpdateSuccess()
-                        refetch()
-                      })
-                    },
-                  })
-                }
-              />
-            </Tooltip>
-          </>
+                        }).then(() => {
+                          toastUpdateSuccess()
+                          refetch()
+                        })
+                      },
+                    })
+                  }
+                />
+              </Tooltip>
+            </>
+          )}
         </Space>
       ),
     },

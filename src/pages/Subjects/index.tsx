@@ -1,12 +1,25 @@
-import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
-import { Button, Input, InputRef, Space, Table, Tooltip } from 'antd'
+import {
+  DeleteOutlined,
+  EditOutlined,
+  ExclamationCircleFilled,
+  PlusOutlined,
+  SearchOutlined,
+} from '@ant-design/icons'
+import { Button, Form, Input, InputRef, Modal, Space, Table, Tooltip, notification } from 'antd'
 import { ColumnType, ColumnsType, FilterConfirmProps } from 'antd/es/table/interface'
 import dayjs from 'dayjs'
 import { useRef, useState } from 'react'
 import Highlighter from 'react-highlight-words'
 import { DEFAULT_LIMIT_ITEMS } from '../../common/constants'
 import Loading from '../../components/Loading'
-import { Subject, useSubjectsQuery } from '../../graphql/generated/graphql'
+import {
+  Subject,
+  useCreateSubjectMutation,
+  useRemoveSubjectMutation,
+  useSubjectsQuery,
+  useUpdateSubjectMutation,
+} from '../../graphql/generated/graphql'
+import { toastUpdateSuccess } from '../../utils/toast'
 
 interface SubjectItemDataType {
   id: string
@@ -30,6 +43,12 @@ const Subjects = () => {
   const [searchText, setSearchText] = useState('')
   const [searchedColumn, setSearchedColumn] = useState('')
   const [page, setPage] = useState(1)
+  const [isOpen, setIsOpen] = useState(false)
+  const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
+  const [form] = Form.useForm()
+  const [createSubject] = useCreateSubjectMutation()
+  const [updateSubject] = useUpdateSubjectMutation()
+  const [removeSubject] = useRemoveSubjectMutation()
 
   const searchInput = useRef<InputRef>(null)
 
@@ -153,51 +172,27 @@ const Subjects = () => {
         <Space size="middle">
           <>
             <Tooltip title="Edit">
-              <EditOutlined
-                className="text-lg"
-                // onClick={() =>
-                //   Modal.confirm({
-                //     title: 'Are you sure to reject this request?',
-                //     icon: <ExclamationCircleFilled />,
-                //     onOk() {
-                //       updateStatusTutorRequest({
-                //         variables: {
-                //           input: {
-                //             id: String(record.id),
-                //             status: TutorRequestStatus.Accepted,
-                //           },
-                //         },
-                //       }).then(() => {
-                //         toastUpdateSuccess()
-                //         refetch()
-                //       })
-                //     },
-                //   })
-                // }
-              />
+              <EditOutlined className="text-lg" onClick={() => setSelectedSubject(record)} />
             </Tooltip>
             <Tooltip title="Delete">
               <DeleteOutlined
-                className="text-lg"
-                // onClick={() =>
-                //   Modal.confirm({
-                //     title: 'Are you sure to reject this request?',
-                //     icon: <ExclamationCircleFilled />,
-                //     onOk() {
-                //       updateStatusTutorRequest({
-                //         variables: {
-                //           input: {
-                //             id: String(record.id),
-                //             status: TutorRequestStatus.Rejected,
-                //           },
-                //         },
-                //       }).then(() => {
-                //         toastUpdateSuccess()
-                //         refetch()
-                //       })
-                //     },
-                //   })
-                // }
+                className="text-lg text-price"
+                onClick={() =>
+                  Modal.confirm({
+                    title: 'Are you sure to delete this subject?',
+                    icon: <ExclamationCircleFilled />,
+                    onOk() {
+                      removeSubject({
+                        variables: {
+                          id: String(record.id),
+                        },
+                      }).then(() => {
+                        toastUpdateSuccess()
+                        refetch()
+                      })
+                    },
+                  })
+                }
               />
             </Tooltip>
           </>
@@ -210,13 +205,107 @@ const Subjects = () => {
     <Loading />
   ) : (
     <div>
+      <Modal
+        open={!!selectedSubject}
+        title="Update subject"
+        okText="Update"
+        cancelText="Cancel"
+        destroyOnClose={true}
+        onCancel={() => {
+          form.resetFields()
+          refetch()
+          setIsOpen(false)
+        }}
+        onOk={() => {
+          form.validateFields().then((values) => {
+            updateSubject({
+              variables: {
+                input: {
+                  id: selectedSubject?.id,
+                  ...values,
+                },
+              },
+              onCompleted: () => {
+                notification.success({ message: 'Update successfully !' })
+                form.resetFields()
+                refetch()
+                setSelectedSubject(null)
+              },
+            })
+          })
+        }}
+        className="w-2/5"
+      >
+        <Form
+          preserve={false}
+          form={form}
+          layout="vertical"
+          name="create_course_form"
+          className="p-4"
+        >
+          <Form.Item
+            name="name"
+            label="Name"
+            rules={[{ required: true, message: 'Please input name of the subject' }]}
+            initialValue={selectedSubject?.name}
+          >
+            <Input placeholder="Name" />
+          </Form.Item>
+        </Form>
+      </Modal>
+      <Modal
+        open={isOpen}
+        title="Create subject"
+        okText="Create"
+        cancelText="Cancel"
+        destroyOnClose={true}
+        onCancel={() => {
+          form.resetFields()
+          refetch()
+          setIsOpen(false)
+        }}
+        onOk={() => {
+          form.validateFields().then((values) => {
+            createSubject({
+              variables: {
+                input: {
+                  ...values,
+                },
+              },
+              onCompleted: () => {
+                notification.success({ message: 'Create successfully !' })
+                form.resetFields()
+                refetch()
+                setIsOpen(false)
+              },
+            })
+          })
+        }}
+        className="w-2/5"
+      >
+        <Form
+          preserve={false}
+          form={form}
+          layout="vertical"
+          name="create_course_form"
+          className="p-4"
+        >
+          <Form.Item
+            name="name"
+            label="Name"
+            rules={[{ required: true, message: 'Please input name of the subject' }]}
+          >
+            <Input placeholder="Name" />
+          </Form.Item>
+        </Form>
+      </Modal>
       <div className="py-5 px-4 flex justify-end">
         <Button
           type="primary"
           icon={<PlusOutlined className="inline-block align-middle" />}
-          // onClick={() => {
-          //   setOpenCreateModal(true)
-          // }}
+          onClick={() => {
+            setIsOpen(true)
+          }}
         >
           <span>
             <p className="font-medium">Create</p>

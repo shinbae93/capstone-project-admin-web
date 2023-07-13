@@ -11,17 +11,14 @@ import {
   useCoursesQuery,
   useRemoveCourseByAdminMutation,
 } from '../../graphql/generated/graphql'
-import { formatPhoneNumber } from '../../utils/format'
 import { toastRemoveSuccess } from '../../utils/toast'
+import { minBy } from 'lodash'
 
 interface CourseItemDataType {
   id: string
   name: string
   thumbnail: string
-  fee: number
   status: string
-  startDate: string
-  endDate: string
   tutorAvatar: string
   tutorName: string
   tutorEmail: string
@@ -38,10 +35,7 @@ const convertUserItems = (courses: Course[]) => {
     id: item.id,
     thumbnail: item.thumbnail || DEFAULT_IMG,
     name: item.name,
-    fee: item.fee,
     status: item.status,
-    startDate: item.startDate,
-    endDate: item.endDate,
     tutorAvatar: item.user?.avatar || DEFAULT_AVATAR,
     tutorName: item.user?.fullName,
     tutorEmail: item.user?.email,
@@ -160,7 +154,7 @@ const Courses = () => {
       dataIndex: 'thumbnail',
       width: '7%',
       render: (value: string) => (
-        <img src={value} alt="avatar" className="w-14 h-14 rounded-full" />
+        <img src={value} alt="avatar" className="w-14 h-14 rounded-full object-scale-down" />
       ),
     },
     {
@@ -177,28 +171,27 @@ const Courses = () => {
       sortDirections: ['descend', 'ascend'],
       ...getColumnSearchProps('status'),
     },
-    {
-      title: 'Start date',
-      width: '10%',
-      dataIndex: 'startDate',
-      sorter: (a, b) => +dayjs(a.startDate).isBefore(dayjs(b.startDate)),
-      sortDirections: ['descend', 'ascend'],
-      render: (value) => dayjs(value).format('DD/MM/YYYY'),
-    },
-    {
-      title: 'End date',
-      width: '10%',
-      dataIndex: 'endDate',
-      sorter: (a, b) => +dayjs(a.endDate).isBefore(dayjs(b.endDate)),
-      sortDirections: ['descend', 'ascend'],
-      render: (value) => dayjs(value).format('DD/MM/YYYY'),
-    },
+    // {
+    //   title: 'Start date',
+    //   width: '10%',
+    //   dataIndex: 'startDate',
+    //   sortDirections: ['descend', 'ascend'],
+    //   render: (_, record) =>
+    //     dayjs(minBy(record?.classes, 'startDate')?.startDate).format('DD/MM/YYYY'),
+    // },
+    // {
+    //   title: 'End date',
+    //   width: '10%',
+    //   dataIndex: 'endDate',
+    //   sorter: (a, b) => +dayjs(a.endDate).isBefore(dayjs(b.endDate)),
+    //   sortDirections: ['descend', 'ascend'],
+    //   render: (value) => dayjs(value).format('DD/MM/YYYY'),
+    // },
     {
       title: 'Grade',
       dataIndex: 'grade',
       sorter: (a, b) => a.grade.length - b.grade.length,
       sortDirections: ['descend', 'ascend'],
-      render: (value) => formatPhoneNumber(value),
     },
     {
       title: 'Subject',
@@ -221,7 +214,7 @@ const Courses = () => {
       render: (value) => dayjs(value).format('DD/MM/YYYY HH:mm:ss'),
     },
     {
-      title: 'Blocked',
+      title: '',
       fixed: 'right',
       render: (_, record) => (
         <Space size="middle">

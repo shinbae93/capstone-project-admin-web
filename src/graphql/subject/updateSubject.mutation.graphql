@@ -1,0 +1,5 @@
+mutation updateSubject($input: UpdateSubjectInput!) {
+  updateSubject(input: $input) {
+    id
+  }
+}

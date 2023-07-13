@@ -58,7 +58,7 @@ export type AssignmentQueryParams = {
 
 export type Calendar = {
   __typename?: 'Calendar';
-  class: Class;
+  class?: Maybe<Class>;
   classId: Scalars['String']['output'];
   className: Scalars['String']['output'];
   course: Course;
@@ -88,7 +88,7 @@ export type CalendarQueryParams = {
 };
 
 export type ChargeInput = {
-  amount: Scalars['Float']['input'];
+  classId: Scalars['String']['input'];
   paymentMethodId: Scalars['String']['input'];
 };
 
@@ -98,11 +98,15 @@ export type Class = {
   course: Course;
   courseId: Scalars['String']['output'];
   createdAt: Scalars['DateTime']['output'];
+  duration: Scalars['Float']['output'];
+  endDate: Scalars['Date']['output'];
+  fee: Scalars['Float']['output'];
   id: Scalars['ID']['output'];
   method: ClassMethod;
   name: Scalars['String']['output'];
   occupiedSlots: Scalars['Float']['output'];
   schedule: Array<ScheduleTime>;
+  startDate: Scalars['Date']['output'];
   totalSlots: Scalars['Float']['output'];
   updatedAt: Scalars['DateTime']['output'];
 };
@@ -128,18 +132,13 @@ export type Course = {
   classes?: Maybe<Array<Class>>;
   createdAt: Scalars['DateTime']['output'];
   description?: Maybe<Scalars['String']['output']>;
-  duration: Scalars['Float']['output'];
-  endDate: Scalars['Date']['output'];
-  fee: Scalars['Float']['output'];
   grade: Grade;
   gradeId: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   isPublished: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   objectives?: Maybe<Array<Scalars['String']['output']>>;
-  paymentDate?: Maybe<Scalars['Int']['output']>;
   publishedAt?: Maybe<Scalars['DateTime']['output']>;
-  startDate: Scalars['Date']['output'];
   status: CourseStatus;
   subject: Subject;
   subjectId: Scalars['String']['output'];
@@ -165,6 +164,7 @@ export type CourseQueryParams = {
 };
 
 export enum CourseStatus {
+  Draft = 'DRAFT',
   Ended = 'ENDED',
   InProgress = 'IN_PROGRESS',
   UpComing = 'UP_COMING'
@@ -177,29 +177,30 @@ export type CoursesPagination = {
 };
 
 export type CreateClassInput = {
+  address?: InputMaybe<Scalars['String']['input']>;
   courseId: Scalars['String']['input'];
+  endDate: Scalars['DateTime']['input'];
+  fee: Scalars['Float']['input'];
   method: ClassMethod;
   name: Scalars['String']['input'];
   schedule: Array<ScheduleTimeInput>;
+  startDate: Scalars['DateTime']['input'];
   totalSlots: Scalars['Int']['input'];
 };
 
 export type CreateCourseInput = {
   description?: InputMaybe<Scalars['String']['input']>;
-  endDate: Scalars['DateTime']['input'];
-  fee: Scalars['Float']['input'];
   gradeId: Scalars['ID']['input'];
   isPublished?: InputMaybe<Scalars['Boolean']['input']>;
   name: Scalars['String']['input'];
   objectives?: InputMaybe<Array<Scalars['String']['input']>>;
-  paymentDate: Scalars['Int']['input'];
-  startDate: Scalars['DateTime']['input'];
   subjectId: Scalars['ID']['input'];
   thumbnail?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CreateEnrolmentInput = {
   classId: Scalars['ID']['input'];
+  totalMonths: Scalars['Int']['input'];
 };
 
 export type CreateGradeInput = {
@@ -223,6 +224,8 @@ export type CreateSubjectInput = {
 };
 
 export type CreateTutorReportInput = {
+  classId: Scalars['String']['input'];
+  courseId: Scalars['String']['input'];
   files?: InputMaybe<Array<Scalars['String']['input']>>;
   reason: Scalars['String']['input'];
   tutorId: Scalars['String']['input'];
@@ -246,8 +249,13 @@ export type Enrolment = {
   course: Course;
   courseId: Scalars['ID']['output'];
   createdAt: Scalars['DateTime']['output'];
+  endTime: Scalars['Date']['output'];
   id: Scalars['ID']['output'];
-  isFinished: Scalars['Boolean']['output'];
+  overduePaymentAt: Scalars['Date']['output'];
+  payment?: Maybe<Payment>;
+  paymentId?: Maybe<Scalars['ID']['output']>;
+  startTime: Scalars['Date']['output'];
+  status: EnrolmentStatus;
   user: User;
   userId: Scalars['ID']['output'];
 };
@@ -256,7 +264,7 @@ export type EnrolmentFilterParams = {
   classId?: InputMaybe<Scalars['ID']['input']>;
   courseId?: InputMaybe<Scalars['ID']['input']>;
   q?: InputMaybe<Scalars['String']['input']>;
-  statuses?: InputMaybe<Array<CourseStatus>>;
+  statuses?: InputMaybe<Array<EnrolmentStatus>>;
 };
 
 export type EnrolmentQueryParams = {
@@ -264,6 +272,14 @@ export type EnrolmentQueryParams = {
   pagination?: InputMaybe<PaginateOptions>;
   sorting?: InputMaybe<Array<SortField>>;
 };
+
+export enum EnrolmentStatus {
+  Ended = 'ENDED',
+  InProgress = 'IN_PROGRESS',
+  OverduePayment = 'OVERDUE_PAYMENT',
+  PendingPayment = 'PENDING_PAYMENT',
+  UpComing = 'UP_COMING'
+}
 
 export type EnrolmentsPagination = {
   __typename?: 'EnrolmentsPagination';
@@ -331,7 +347,7 @@ export type Mutation = {
   removeCourse: Scalars['Boolean']['output'];
   removeCourseByAdmin: Scalars['Boolean']['output'];
   removeEnrolment: Scalars['Boolean']['output'];
-  removeGrade: Grade;
+  removeGrade: Scalars['Boolean']['output'];
   removeQuiz: Scalars['Boolean']['output'];
   removeSubject: Scalars['Boolean']['output'];
   removeTutorRequest: Scalars['Boolean']['output'];
@@ -351,7 +367,7 @@ export type Mutation = {
 
 
 export type MutationChargeArgs = {
-  chargeInput: ChargeInput;
+  input: ChargeInput;
 };
 
 
@@ -564,24 +580,43 @@ export type PaginationMeta = {
 
 export type Payment = {
   __typename?: 'Payment';
-  amount: Scalars['String']['output'];
+  amount: Scalars['Float']['output'];
   class: Class;
   classId: Scalars['String']['output'];
   course: Course;
   courseId: Scalars['String']['output'];
   createdAt: Scalars['DateTime']['output'];
+  enrolment?: Maybe<Enrolment>;
+  enrolmentId?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   note: Scalars['String']['output'];
-  paidAt: Scalars['DateTime']['output'];
-  status: PaymentStatus;
+  type: PaymentType;
   user: User;
-  userId: Scalars['String']['output'];
+  userId?: Maybe<Scalars['String']['output']>;
 };
 
-export enum PaymentStatus {
-  Canceled = 'CANCELED',
-  Paid = 'PAID',
-  Pending = 'PENDING'
+export type PaymentFilterParams = {
+  classId?: InputMaybe<Scalars['ID']['input']>;
+  courseId?: InputMaybe<Scalars['ID']['input']>;
+  isAdmin?: InputMaybe<Scalars['Boolean']['input']>;
+  userId?: InputMaybe<Scalars['ID']['input']>;
+};
+
+export type PaymentPagination = {
+  __typename?: 'PaymentPagination';
+  items: Array<Payment>;
+  meta: PaginationMeta;
+};
+
+export type PaymentQueryParams = {
+  filters?: InputMaybe<PaymentFilterParams>;
+  pagination?: InputMaybe<PaginateOptions>;
+  sorting?: InputMaybe<Array<SortField>>;
+};
+
+export enum PaymentType {
+  PayIn = 'PAY_IN',
+  PayOut = 'PAY_OUT'
 }
 
 export type Query = {
@@ -607,10 +642,11 @@ export type Query = {
   myCalendars: Array<Calendar>;
   myEnrolmentByCourse: Enrolment;
   myEnrolments: EnrolmentsPagination;
+  myPayments: PaymentPagination;
   notification: Notification;
   notifications: NotificationPagination;
   payment: Payment;
-  payments: Array<Payment>;
+  payments: PaymentPagination;
   quiz: Quiz;
   quizzes: QuizPagination;
   subject: Subject;
@@ -726,13 +762,23 @@ export type QueryMyEnrolmentsArgs = {
 };
 
 
+export type QueryMyPaymentsArgs = {
+  queryParams: PaymentQueryParams;
+};
+
+
 export type QueryNotificationArgs = {
   id: Scalars['ID']['input'];
 };
 
 
 export type QueryPaymentArgs = {
-  id: Scalars['Int']['input'];
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryPaymentsArgs = {
+  queryParams: PaymentQueryParams;
 };
 
 
@@ -911,6 +957,8 @@ export type TutorDetail = {
   cv: Scalars['String']['output'];
   headline?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
+  rating?: Maybe<Scalars['Float']['output']>;
+  totalReviews: Scalars['Int']['output'];
   updatedAt: Scalars['DateTime']['output'];
   user: User;
   userId: Scalars['ID']['output'];
@@ -936,6 +984,10 @@ export type TutorReport = {
   __typename?: 'TutorReport';
   author: User;
   authorId: Scalars['String']['output'];
+  class: Class;
+  classId: Scalars['String']['output'];
+  course: Course;
+  courseId: Scalars['String']['output'];
   createdAt: Scalars['DateTime']['output'];
   files?: Maybe<Array<Scalars['String']['output']>>;
   id: Scalars['ID']['output'];
@@ -1031,23 +1083,23 @@ export type UpdateBlockStatusUserInput = {
 };
 
 export type UpdateClassInput = {
+  address?: InputMaybe<Scalars['String']['input']>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  fee?: InputMaybe<Scalars['Float']['input']>;
   id: Scalars['ID']['input'];
   method?: InputMaybe<ClassMethod>;
   name?: InputMaybe<Scalars['String']['input']>;
   schedule?: InputMaybe<Array<ScheduleTimeInput>>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
   totalSlots?: InputMaybe<Scalars['Int']['input']>;
 };
 
 export type UpdateCourseInput = {
   description?: InputMaybe<Scalars['String']['input']>;
-  endDate?: InputMaybe<Scalars['DateTime']['input']>;
-  fee?: InputMaybe<Scalars['Float']['input']>;
   gradeId?: InputMaybe<Scalars['ID']['input']>;
   id: Scalars['ID']['input'];
   name?: InputMaybe<Scalars['String']['input']>;
   objectives?: InputMaybe<Array<Scalars['String']['input']>>;
-  paymentDate?: InputMaybe<Scalars['Int']['input']>;
-  startDate?: InputMaybe<Scalars['DateTime']['input']>;
   subjectId?: InputMaybe<Scalars['ID']['input']>;
   thumbnail?: InputMaybe<Scalars['String']['input']>;
 };
@@ -1164,7 +1216,7 @@ export type CoursesQueryVariables = Exact<{
 }>;
 
 
-export type CoursesQuery = { __typename?: 'Query', courses: { __typename?: 'CoursesPagination', meta: { __typename?: 'PaginationMeta', itemCount: number, totalItems: number, itemsPerPage: number, totalPages: number, currentPage: number }, items: Array<{ __typename?: 'Course', id: string, name: string, thumbnail?: string | null, fee: number, status: CourseStatus, startDate: any, endDate: any, createdAt: any, updatedAt: any, user: { __typename?: 'User', id: string, avatar?: string | null, fullName: string, email: string }, grade: { __typename?: 'Grade', id: string, name: string }, subject: { __typename?: 'Subject', id: string, name: string } }> } };
+export type CoursesQuery = { __typename?: 'Query', courses: { __typename?: 'CoursesPagination', meta: { __typename?: 'PaginationMeta', itemCount: number, totalItems: number, itemsPerPage: number, totalPages: number, currentPage: number }, items: Array<{ __typename?: 'Course', id: string, name: string, thumbnail?: string | null, status: CourseStatus, createdAt: any, updatedAt: any, user: { __typename?: 'User', id: string, avatar?: string | null, fullName: string, email: string }, grade: { __typename?: 'Grade', id: string, name: string }, subject: { __typename?: 'Subject', id: string, name: string } }> } };
 
 export type RemoveCourseByAdminMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -1173,6 +1225,20 @@ export type RemoveCourseByAdminMutationVariables = Exact<{
 
 export type RemoveCourseByAdminMutation = { __typename?: 'Mutation', removeCourseByAdmin: boolean };
 
+export type CreateGradeMutationVariables = Exact<{
+  input: CreateGradeInput;
+}>;
+
+
+export type CreateGradeMutation = { __typename?: 'Mutation', createGrade: { __typename?: 'Grade', id: string } };
+
+export type RemoveGradeMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type RemoveGradeMutation = { __typename?: 'Mutation', removeGrade: boolean };
+
 export type GradesQueryVariables = Exact<{
   queryParams: QueryParams;
 }>;
@@ -1180,12 +1246,47 @@ export type GradesQueryVariables = Exact<{
 
 export type GradesQuery = { __typename?: 'Query', grades: { __typename?: 'GradePagination', meta: { __typename?: 'PaginationMeta', itemCount: number, totalItems: number, itemsPerPage: number, totalPages: number, currentPage: number }, items: Array<{ __typename?: 'Grade', id: string, name: string, createdAt: any, updatedAt: any }> } };
 
+export type UpdateGradeMutationVariables = Exact<{
+  input: UpdateGradeInput;
+}>;
+
+
+export type UpdateGradeMutation = { __typename?: 'Mutation', updateGrade: { __typename?: 'Grade', id: string } };
+
+export type GetPaymentsQueryVariables = Exact<{
+  queryParams: PaymentQueryParams;
+}>;
+
+
+export type GetPaymentsQuery = { __typename?: 'Query', payments: { __typename?: 'PaymentPagination', meta: { __typename?: 'PaginationMeta', itemCount: number, totalItems: number, itemsPerPage: number, totalPages: number, currentPage: number }, items: Array<{ __typename?: 'Payment', id: string, amount: number, type: PaymentType, note: string, enrolmentId?: string | null, userId?: string | null, courseId: string, classId: string, createdAt: any, user: { __typename?: 'User', fullName: string }, course: { __typename?: 'Course', name: string }, class: { __typename?: 'Class', name: string } }> } };
+
+export type CreateSubjectMutationVariables = Exact<{
+  input: CreateSubjectInput;
+}>;
+
+
+export type CreateSubjectMutation = { __typename?: 'Mutation', createSubject: { __typename?: 'Subject', id: string } };
+
+export type RemoveSubjectMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type RemoveSubjectMutation = { __typename?: 'Mutation', removeSubject: boolean };
+
 export type SubjectsQueryVariables = Exact<{
   queryParams: QueryParams;
 }>;
 
 
 export type SubjectsQuery = { __typename?: 'Query', subjects: { __typename?: 'SubjectPagination', meta: { __typename?: 'PaginationMeta', itemCount: number, totalItems: number, itemsPerPage: number, totalPages: number, currentPage: number }, items: Array<{ __typename?: 'Subject', id: string, name: string, createdAt: any, updatedAt: any }> } };
+
+export type UpdateSubjectMutationVariables = Exact<{
+  input: UpdateSubjectInput;
+}>;
+
+
+export type UpdateSubjectMutation = { __typename?: 'Mutation', updateSubject: { __typename?: 'Subject', id: string } };
 
 export type TutorReportsQueryVariables = Exact<{
   queryParams: TutorReportQueryParams;
@@ -1377,10 +1478,7 @@ export const CoursesDocument = gql`
       id
       name
       thumbnail
-      fee
       status
-      startDate
-      endDate
       user {
         id
         avatar
@@ -1460,6 +1558,70 @@ export function useRemoveCourseByAdminMutation(baseOptions?: Apollo.MutationHook
 export type RemoveCourseByAdminMutationHookResult = ReturnType<typeof useRemoveCourseByAdminMutation>;
 export type RemoveCourseByAdminMutationResult = Apollo.MutationResult<RemoveCourseByAdminMutation>;
 export type RemoveCourseByAdminMutationOptions = Apollo.BaseMutationOptions<RemoveCourseByAdminMutation, RemoveCourseByAdminMutationVariables>;
+export const CreateGradeDocument = gql`
+    mutation createGrade($input: CreateGradeInput!) {
+  createGrade(input: $input) {
+    id
+  }
+}
+    `;
+export type CreateGradeMutationFn = Apollo.MutationFunction<CreateGradeMutation, CreateGradeMutationVariables>;
+
+/**
+ * __useCreateGradeMutation__
+ *
+ * To run a mutation, you first call `useCreateGradeMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateGradeMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createGradeMutation, { data, loading, error }] = useCreateGradeMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCreateGradeMutation(baseOptions?: Apollo.MutationHookOptions<CreateGradeMutation, CreateGradeMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateGradeMutation, CreateGradeMutationVariables>(CreateGradeDocument, options);
+      }
+export type CreateGradeMutationHookResult = ReturnType<typeof useCreateGradeMutation>;
+export type CreateGradeMutationResult = Apollo.MutationResult<CreateGradeMutation>;
+export type CreateGradeMutationOptions = Apollo.BaseMutationOptions<CreateGradeMutation, CreateGradeMutationVariables>;
+export const RemoveGradeDocument = gql`
+    mutation removeGrade($id: ID!) {
+  removeGrade(id: $id)
+}
+    `;
+export type RemoveGradeMutationFn = Apollo.MutationFunction<RemoveGradeMutation, RemoveGradeMutationVariables>;
+
+/**
+ * __useRemoveGradeMutation__
+ *
+ * To run a mutation, you first call `useRemoveGradeMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRemoveGradeMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [removeGradeMutation, { data, loading, error }] = useRemoveGradeMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useRemoveGradeMutation(baseOptions?: Apollo.MutationHookOptions<RemoveGradeMutation, RemoveGradeMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<RemoveGradeMutation, RemoveGradeMutationVariables>(RemoveGradeDocument, options);
+      }
+export type RemoveGradeMutationHookResult = ReturnType<typeof useRemoveGradeMutation>;
+export type RemoveGradeMutationResult = Apollo.MutationResult<RemoveGradeMutation>;
+export type RemoveGradeMutationOptions = Apollo.BaseMutationOptions<RemoveGradeMutation, RemoveGradeMutationVariables>;
 export const GradesDocument = gql`
     query grades($queryParams: QueryParams!) {
   grades(queryParams: $queryParams) {
@@ -1507,6 +1669,164 @@ export function useGradesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Gra
 export type GradesQueryHookResult = ReturnType<typeof useGradesQuery>;
 export type GradesLazyQueryHookResult = ReturnType<typeof useGradesLazyQuery>;
 export type GradesQueryResult = Apollo.QueryResult<GradesQuery, GradesQueryVariables>;
+export const UpdateGradeDocument = gql`
+    mutation updateGrade($input: UpdateGradeInput!) {
+  updateGrade(input: $input) {
+    id
+  }
+}
+    `;
+export type UpdateGradeMutationFn = Apollo.MutationFunction<UpdateGradeMutation, UpdateGradeMutationVariables>;
+
+/**
+ * __useUpdateGradeMutation__
+ *
+ * To run a mutation, you first call `useUpdateGradeMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateGradeMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateGradeMutation, { data, loading, error }] = useUpdateGradeMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateGradeMutation(baseOptions?: Apollo.MutationHookOptions<UpdateGradeMutation, UpdateGradeMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateGradeMutation, UpdateGradeMutationVariables>(UpdateGradeDocument, options);
+      }
+export type UpdateGradeMutationHookResult = ReturnType<typeof useUpdateGradeMutation>;
+export type UpdateGradeMutationResult = Apollo.MutationResult<UpdateGradeMutation>;
+export type UpdateGradeMutationOptions = Apollo.BaseMutationOptions<UpdateGradeMutation, UpdateGradeMutationVariables>;
+export const GetPaymentsDocument = gql`
+    query getPayments($queryParams: PaymentQueryParams!) {
+  payments(queryParams: $queryParams) {
+    meta {
+      itemCount
+      totalItems
+      itemsPerPage
+      totalPages
+      currentPage
+    }
+    items {
+      id
+      amount
+      type
+      note
+      enrolmentId
+      userId
+      user {
+        fullName
+      }
+      courseId
+      course {
+        name
+      }
+      classId
+      class {
+        name
+      }
+      createdAt
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetPaymentsQuery__
+ *
+ * To run a query within a React component, call `useGetPaymentsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetPaymentsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetPaymentsQuery({
+ *   variables: {
+ *      queryParams: // value for 'queryParams'
+ *   },
+ * });
+ */
+export function useGetPaymentsQuery(baseOptions: Apollo.QueryHookOptions<GetPaymentsQuery, GetPaymentsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetPaymentsQuery, GetPaymentsQueryVariables>(GetPaymentsDocument, options);
+      }
+export function useGetPaymentsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetPaymentsQuery, GetPaymentsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetPaymentsQuery, GetPaymentsQueryVariables>(GetPaymentsDocument, options);
+        }
+export type GetPaymentsQueryHookResult = ReturnType<typeof useGetPaymentsQuery>;
+export type GetPaymentsLazyQueryHookResult = ReturnType<typeof useGetPaymentsLazyQuery>;
+export type GetPaymentsQueryResult = Apollo.QueryResult<GetPaymentsQuery, GetPaymentsQueryVariables>;
+export const CreateSubjectDocument = gql`
+    mutation createSubject($input: CreateSubjectInput!) {
+  createSubject(input: $input) {
+    id
+  }
+}
+    `;
+export type CreateSubjectMutationFn = Apollo.MutationFunction<CreateSubjectMutation, CreateSubjectMutationVariables>;
+
+/**
+ * __useCreateSubjectMutation__
+ *
+ * To run a mutation, you first call `useCreateSubjectMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateSubjectMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createSubjectMutation, { data, loading, error }] = useCreateSubjectMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCreateSubjectMutation(baseOptions?: Apollo.MutationHookOptions<CreateSubjectMutation, CreateSubjectMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateSubjectMutation, CreateSubjectMutationVariables>(CreateSubjectDocument, options);
+      }
+export type CreateSubjectMutationHookResult = ReturnType<typeof useCreateSubjectMutation>;
+export type CreateSubjectMutationResult = Apollo.MutationResult<CreateSubjectMutation>;
+export type CreateSubjectMutationOptions = Apollo.BaseMutationOptions<CreateSubjectMutation, CreateSubjectMutationVariables>;
+export const RemoveSubjectDocument = gql`
+    mutation removeSubject($id: ID!) {
+  removeSubject(id: $id)
+}
+    `;
+export type RemoveSubjectMutationFn = Apollo.MutationFunction<RemoveSubjectMutation, RemoveSubjectMutationVariables>;
+
+/**
+ * __useRemoveSubjectMutation__
+ *
+ * To run a mutation, you first call `useRemoveSubjectMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRemoveSubjectMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [removeSubjectMutation, { data, loading, error }] = useRemoveSubjectMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useRemoveSubjectMutation(baseOptions?: Apollo.MutationHookOptions<RemoveSubjectMutation, RemoveSubjectMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<RemoveSubjectMutation, RemoveSubjectMutationVariables>(RemoveSubjectDocument, options);
+      }
+export type RemoveSubjectMutationHookResult = ReturnType<typeof useRemoveSubjectMutation>;
+export type RemoveSubjectMutationResult = Apollo.MutationResult<RemoveSubjectMutation>;
+export type RemoveSubjectMutationOptions = Apollo.BaseMutationOptions<RemoveSubjectMutation, RemoveSubjectMutationVariables>;
 export const SubjectsDocument = gql`
     query subjects($queryParams: QueryParams!) {
   subjects(queryParams: $queryParams) {
@@ -1554,6 +1874,39 @@ export function useSubjectsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<S
 export type SubjectsQueryHookResult = ReturnType<typeof useSubjectsQuery>;
 export type SubjectsLazyQueryHookResult = ReturnType<typeof useSubjectsLazyQuery>;
 export type SubjectsQueryResult = Apollo.QueryResult<SubjectsQuery, SubjectsQueryVariables>;
+export const UpdateSubjectDocument = gql`
+    mutation updateSubject($input: UpdateSubjectInput!) {
+  updateSubject(input: $input) {
+    id
+  }
+}
+    `;
+export type UpdateSubjectMutationFn = Apollo.MutationFunction<UpdateSubjectMutation, UpdateSubjectMutationVariables>;
+
+/**
+ * __useUpdateSubjectMutation__
+ *
+ * To run a mutation, you first call `useUpdateSubjectMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateSubjectMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateSubjectMutation, { data, loading, error }] = useUpdateSubjectMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateSubjectMutation(baseOptions?: Apollo.MutationHookOptions<UpdateSubjectMutation, UpdateSubjectMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateSubjectMutation, UpdateSubjectMutationVariables>(UpdateSubjectDocument, options);
+      }
+export type UpdateSubjectMutationHookResult = ReturnType<typeof useUpdateSubjectMutation>;
+export type UpdateSubjectMutationResult = Apollo.MutationResult<UpdateSubjectMutation>;
+export type UpdateSubjectMutationOptions = Apollo.BaseMutationOptions<UpdateSubjectMutation, UpdateSubjectMutationVariables>;
 export const TutorReportsDocument = gql`
     query tutorReports($queryParams: TutorReportQueryParams!) {
   tutorReports(queryParams: $queryParams) {
